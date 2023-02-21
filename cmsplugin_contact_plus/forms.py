@@ -1,4 +1,3 @@
-from django.utils.http import urlquote
 from django import forms
 from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
@@ -6,8 +5,9 @@ from django.contrib.sites.models import Site
 from django.template.defaultfilters import slugify
 from django.utils.text import get_valid_filename
 from django.conf import settings
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 
+from urllib.parse import quote
 from captcha.fields import ReCaptchaField
 from cmsplugin_contact_plus.models import ContactPlus, ContactRecord
 from cmsplugin_contact_plus.signals import contact_message_sent
@@ -53,11 +53,11 @@ class ContactFormPlus(forms.Form):
                                 attrs={'placeholder': extraField.placeholder}
                             ),
                             required=extraField.required)
-                elif extraField.fieldType == 'FileField': 
+                elif extraField.fieldType == 'FileField':
                     self.fields[slugify(extraField.label)] = forms.FileField(label=extraField.label,
                             initial=extraField.initial,
                             required=extraField.required)
-                elif extraField.fieldType == 'ImageField': 
+                elif extraField.fieldType == 'ImageField':
                     self.fields[slugify(extraField.label)] = forms.ImageField(label=extraField.label,
                             initial=extraField.initial,
                             required=extraField.required)
@@ -137,13 +137,13 @@ class ContactFormPlus(forms.Form):
             for field in order:
                 key = slugify(field.label)
                 value = self.cleaned_data.get(key, '(no input)')
-                # redefine value for files... 
+                # redefine value for files...
                 if field.fieldType in ["FileField", "ImageField"]:
                     val = ts + '-' + get_valid_filename(value)
                     if settings.MEDIA_URL.startswith("http"):
                         value = "%s%s" % (settings.MEDIA_URL, val)
                     else:
-                        value = "http://%s%s%s" % (current_site, settings.MEDIA_URL, urlquote(val))
+                        value = "http://%s%s%s" % (current_site, settings.MEDIA_URL, quote(val))
                 ordered_dic_list.append({field.label: value})
 
         # Automatically match reply-to email address in form
@@ -164,18 +164,18 @@ class ContactFormPlus(forms.Form):
                 cc_list.append(cc_address)
         except:
             pass
-        
-        # Site specific from_email via GlobalProperty       
+
+        # Site specific from_email via GlobalProperty
         try:
             from userproperty.models import GlobalProperty
             host = request.get_host()
-            site = host.split('.')[1] 
+            site = host.split('.')[1]
             from_email_property = GlobalProperty.objects.filter(Q(name__startswith='DEFAULT_FROM_EMAIL') &
                                                                 Q(name__contains=site)).last()
-            from_email = from_email_property.value            
+            from_email = from_email_property.value
         except:
             from_email = settings.DEFAULT_FROM_EMAIL
-            
+
         email_message = EmailMultiAlternatives(
             subject=instance.email_subject,
             body=render_to_string("cmsplugin_contact_plus/email.txt", {'data': self.cleaned_data,
