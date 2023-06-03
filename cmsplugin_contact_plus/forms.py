@@ -139,7 +139,7 @@ class ContactFormPlus(forms.Form):
                 value = self.cleaned_data.get(key, '(no input)')
                 # redefine value for files...
                 if field.fieldType in ["FileField", "ImageField"]:
-                    val = ts + '-' + get_valid_filename(value)
+                    val = get_valid_filename(ts + '-' + value)
                     if settings.MEDIA_URL.startswith("http"):
                         value = "%s%s" % (settings.MEDIA_URL, val)
                     else:
