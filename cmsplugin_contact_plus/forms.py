@@ -8,7 +8,7 @@ from django.conf import settings
 from django.utils.translation import gettext_lazy as _
 
 from urllib.parse import quote
-from captcha.fields import ReCaptchaField
+from django_recaptcha.fields import ReCaptchaField
 from cmsplugin_contact_plus.models import ContactPlus, ContactRecord
 from cmsplugin_contact_plus.signals import contact_message_sent
 from cmsplugin_contact_plus.utils import get_validators
